@@ -19,14 +19,13 @@ class ImageNet32Dataset(Dataset):
         self.image_paths = []
         self.labels = []
 
-        # Traverse the directory structure to collect image paths and labels
         for class_idx, class_dir in enumerate(sorted(os.listdir(root_dir))):
             class_path = os.path.join(root_dir, class_dir)
             if os.path.isdir(class_path):
                 for img_file in os.listdir(class_path):
                     if img_file.endswith(".png") or img_file.endswith(".JPEG"):
                         self.image_paths.append(os.path.join(class_path, img_file))
-                        self.labels.append(class_idx)  # Assign numeric labels based on class folder order
+                        self.labels.append(class_idx) 
 
     def __len__(self):
         return len(self.image_paths)
@@ -73,7 +72,7 @@ def get_datalooper(ds, batch_size, num_workers, train=True, imagenet_root=None):
     elif ds == 'imagenet':
         if imagenet_root is None:
             raise ValueError("imagenet_root must be provided.")
-        root_dir = imagenet_root # '/data01/yichi5/imagenet32_images'
+        root_dir = imagenet_root 
         transform = transforms.Compose([
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
