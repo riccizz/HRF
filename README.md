@@ -2,8 +2,8 @@
 
 # Towards Hierarchical Rectified Flow
 
-[![HRF openreview](http://img.shields.io/badge/ICLR2025-openreview-B31B1B.svg)](https://openreview.net/forum?id=6F6qwdycgJ)
-[![license](https://img.shields.io/badge/License-MIT-green.svg?labelColor=gray)](https://github.com/atong01/conditional-flow-matching#license)
+[[OpenReview]](https://openreview.net/forum?id=6F6qwdycgJ)
+[[Project]](https://riccizz.github.io/HRF/)
 
 </div>
 
