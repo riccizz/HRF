@@ -17,9 +17,9 @@ This leads to modeling of data distributions with fewer neural function evaluati
 
 
 <p align="center">
-<img src="assets/true_traj.gif" width="300"/>
-<img src="assets/rf_traj.gif" width="300"/>
-<img src="assets/hrf_traj.gif" width="300"/>
+<img src="assets/true_traj.gif" width="250"/>
+<img src="assets/rf_traj.gif" width="250"/>
+<img src="assets/hrf_traj.gif" width="250"/>
 </p>
 
 
