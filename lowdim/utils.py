@@ -225,24 +225,6 @@ class LowDimData():
             initial_comp = MultivariateNormal(self.means, self.covs)
             self.initial_model = MixtureSameFamily(initial_mix, initial_comp)
             self.x0 = self.initial_model.sample([self.batchsize]).to(self.device).detach()
-        elif data_type == "tree":
-            num_split = 4
-            num_gaussians = 8
-            prob_decay = 0.9
-            data = TreeData(num_split, num_gaussians, prob_decay, self.device)
-            self.dim = 2
-            self.x0 = data.x0
-            self.x1 = data.x1
-            self.target_model = data.target_model
-            self.initial_model = data.initial_model
-        elif data_type == "von":
-            self.dim = 1
-            mu = torch.tensor(0.0)
-            kappa = torch.tensor(2.0)
-            self.initial_model = torch.distributions.Uniform(-torch.pi, torch.pi)
-            self.target_model = torch.distributions.VonMises(mu, kappa)
-            self.x0 = self.initial_model.sample((self.batchsize, 1)).to(self.device).detach()
-            self.x1 = self.target_model.sample((self.batchsize, 1)).to(self.device).detach()
         else:
             raise NotImplementedError
 
