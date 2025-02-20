@@ -16,7 +16,7 @@ from tqdm import trange
 from dataset import get_datalooper
 from model import get_model
 from utils import ema, generate_samples, load_model
-from torchcfm import ConditionalFlowMatcher
+from cfm import ConditionalFlowMatcher
 
 
 FLAGS = flags.FLAGS
