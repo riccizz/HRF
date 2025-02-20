@@ -15,12 +15,18 @@ Unlike the classic rectified flow formulation, which formulates a single ODE in 
 
 This leads to modeling of data distributions with fewer neural function evaluations. We empirically verify this on synthetic 1D and 2D data as well as MNIST, CIFAR-10, and ImageNet-32 data. 
 
-
-<p align="center">
-<img src="assets/true_traj.gif" width="250"/>
-<img src="assets/rf_traj.gif" width="250"/>
-<img src="assets/hrf_traj.gif" width="250"/>
-</p>
+<table align="center">
+  <tr>
+    <td align="center"><img src="assets/true_traj.gif" width="250"/></td>
+    <td align="center"><img src="assets/rf_traj.gif" width="250"/></td>
+    <td align="center"><img src="assets/hrf_traj.gif" width="250"/></td>
+  </tr>
+  <tr>
+    <td align="center">Linear Interpolation</td>
+    <td align="center">Rectified Flow</td>
+    <td align="center">Hierarchical Rectified Flow (ours)</td>
+  </tr>
+</table>
 
 
 ## How to run
