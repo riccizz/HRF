@@ -1,4 +1,4 @@
-from torchcfm.models.unet.unet import UNetModelWrapper as UNetModelWrapperBaseline
+from models.unet import UNetModelWrapper as UNetModelWrapperBaseline
 from models.unet_cat_xt_v import UNetModelWrapper as UNetModelWrapperCat
 from models.unet_2_unet import UNetModelWrapper as UNetModelWrapper2UNet
 

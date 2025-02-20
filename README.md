@@ -17,7 +17,9 @@ This leads to modeling of data distributions with fewer neural function evaluati
 
 
 <p align="center">
-<img src="assets/2to2.png" width="600"/>
+<img src="assets/true_traj.gif" width="300"/>
+<img src="assets/rf_traj.gif" width="300"/>
+<img src="assets/hrf_traj.gif" width="300"/>
 </p>
 
 
@@ -31,7 +33,7 @@ cd HRF
 # build environment
 conda create -n hrf python=3.10
 conda activate hrf
-pip install torchcfm
+pip install -r requirements.txt
 
 ```
 
@@ -41,12 +43,7 @@ This repository contains the code to reproduce the main experiments of:
 
 - [Towards Hierarchical Rectified Flow](https://arxiv.org/abs/2302.00482). We introduce **Hierarchical Rectified Flow** (HRF), a framework that models multi-modal random velocity field, acceleration field, etc., in their entirety. By more faithfully capturing the structure of the random velocity field, HRF allows integration paths to intersect, resulting in straighter integration trajectories compared to the classic rectified flow formulation. This improves efficiency by enabling the modeling of complex data distributions with fewer neural function evaluations. 
 
-If you find this code useful in your research, please cite the following papers (expand for BibTeX):
-
-<details>
-<summary>
-Y. Zhang, Y. Yan, A. Schwing, Z. Zhao. Towards Hierarchical Rectified Flow, 2023.
-</summary>
+If you find this code useful in your research, please cite the following papers:
 
 ```bibtex
 @inproceedings{
@@ -58,8 +55,6 @@ Y. Zhang, Y. Yan, A. Schwing, Z. Zhao. Towards Hierarchical Rectified Flow, 2023
     url={https://openreview.net/forum?id=6F6qwdycgJ}
 }
 ```
-
-</details>
 
 
 ## References

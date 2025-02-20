@@ -8,15 +8,15 @@ import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torchcfm.models.unet.fp16_util import convert_module_to_f16, convert_module_to_f32
-from torchcfm.models.unet.nn import (
+from models.fp16_util import convert_module_to_f16, convert_module_to_f32
+from models.nn import (
     conv_nd,
     linear,
     normalization,
     timestep_embedding,
     zero_module,
 )
-from torchcfm.models.unet.unet import (
+from models.unet import (
     TimestepEmbedSequential,
     Upsample,
     Downsample,

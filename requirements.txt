@@ -1,0 +1,15 @@
+torch>=1.11.0
+torchvision>=0.11.0
+
+lightning-bolts
+matplotlib
+numpy<2.0.0
+scipy
+scikit-learn
+scprep
+scanpy
+torchdyn>=1.0.6   # 1.0.4 is broken on pypi
+pot<0.9.5
+torchdiffeq
+absl-py
+clean-fid
