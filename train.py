@@ -16,7 +16,9 @@ from tqdm import trange
 from dataset import get_datalooper
 from model import get_model
 from utils import ema, generate_samples, load_model
-from cfm import ConditionalFlowMatcher
+from cfm import (
+    ConditionalFlowMatcher,
+)
 
 
 FLAGS = flags.FLAGS
@@ -24,7 +26,7 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string("output_dir", "./", help="output directory")
 flags.DEFINE_string("imagenet_root", "./", help="root directory for imagenet")
 flags.DEFINE_string("exp_name", "base", help="experiment name")
-flags.DEFINE_enum("dataset", "cifar10", ["cifar10", "mnist", "imagenet"], help="dataset name")
+flags.DEFINE_enum("dataset", "cifar10", ["cifar10", "mnist", "imagenet32"], help="dataset name")
 flags.DEFINE_bool("hrf", False, help="train hrf or baseline")
 
 # UNet

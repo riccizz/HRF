@@ -69,7 +69,7 @@ def get_datalooper(ds, batch_size, num_workers, train=True, imagenet_root=None):
             ),
         )
         data_shape = (1, 28, 28)
-    elif ds == 'imagenet':
+    elif ds == 'imagenet32':
         if imagenet_root is None:
             raise ValueError("imagenet_root must be provided.")
         root_dir = imagenet_root 
