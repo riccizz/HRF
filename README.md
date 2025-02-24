@@ -45,10 +45,6 @@ pip install -r requirements.txt
 
 ## How to cite
 
-This repository contains the code to reproduce the main experiments of:
-
-- [Towards Hierarchical Rectified Flow](https://arxiv.org/abs/2302.00482). We introduce **Hierarchical Rectified Flow** (HRF), a framework that models multi-modal random velocity field, acceleration field, etc., in their entirety. By more faithfully capturing the structure of the random velocity field, HRF allows integration paths to intersect, resulting in straighter integration trajectories compared to the classic rectified flow formulation. This improves efficiency by enabling the modeling of complex data distributions with fewer neural function evaluations. 
-
 If you find this code useful in your research, please cite the following papers:
 
 ```bibtex
