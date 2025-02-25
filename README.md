@@ -4,6 +4,7 @@
 
 [[OpenReview]](https://openreview.net/forum?id=6F6qwdycgJ)
 [[Project]](https://riccizz.github.io/HRF/)
+[[arxiv]](https://arxiv.org/abs/2502.17436)
 
 </div>
 
