@@ -3,12 +3,22 @@ import os
 
 import torch
 from torch import distributed as dist
+from torchdiffeq import odeint
 from torchdyn.core import NeuralODE
+from torchvision.utils import save_image
 
-from torchvision.utils import make_grid, save_image
+
+def sample_rf(model, sample_shape, nfe, device, integration_method="euler"):
+        if integration_method == "euler":
+            xt = sample_rf_euler(model, sample_shape, nfe, device)
+        elif integration_method == "dopri5":
+            xt, nfe = sample_rf_dopri5(model, sample_shape, device)
+        else:
+            raise NotImplementedError
+        return xt, nfe
 
 
-def sample_rf(model, sample_shape, nfe, device):
+def sample_rf_euler(model, sample_shape, nfe, device):
     node_ = NeuralODE(model, solver="euler", sensitivity="adjoint")
     with torch.no_grad():
         traj = node_.trajectory(
@@ -19,24 +29,81 @@ def sample_rf(model, sample_shape, nfe, device):
     return traj
 
 
-def sample_hrf_euler(model, sample_shape, N, M, device):
-    batchsize = sample_shape[0]
-    xt = torch.randn(sample_shape, device=device)
-    
-    t_values = torch.arange(N, device=device) / N
-    tau_values = torch.arange(M, device=device) / M
-
+def sample_rf_dopri5(model, sample_shape, device):
     with torch.no_grad():
+        step_counter = {"steps": 0}
+        def wrapped_model(t, xt):
+            step_counter["steps"] += 1 
+            return model(t, xt) 
+        t_span = torch.linspace(0, 1, 2, device=device)
+        xt = odeint(
+            wrapped_model, 
+            torch.randn(sample_shape, device=device), 
+            t_span, 
+            rtol=1e-5, 
+            atol=1e-5, 
+            method="dopri5", 
+        )
+        xt = xt[-1, :]
+        
+    return xt, step_counter['steps']
+
+
+def sample_hrf(model, sample_shape, N, M, device, integration_method="euler"):
+        if integration_method == "euler":
+            xt = sample_hrf_euler(model, sample_shape, N, M, device)
+            nfe = N * M
+        elif integration_method == "dopri5":
+            xt, nfe = sample_hrf_dopri5(model, sample_shape, N, device)
+        else:
+            raise NotImplementedError
+        return xt, nfe
+
+
+def sample_hrf_euler(model, sample_shape, N, M, device):
+    with torch.no_grad():
+        batchsize = sample_shape[0]
+        xt = torch.randn(sample_shape, device=device)
+        
+        t_values = torch.arange(N, device=device) / N
+        tau_values = torch.arange(M, device=device) / M
+
         for i in range(N):
             t = t_values[i].expand(batchsize)
-            vt = torch.randn(sample_shape, device=device)
+            vtau = torch.randn(sample_shape, device=device)
             for j in range(M):
                 tau = tau_values[j].expand(batchsize) 
-                a = model(tau, vt, t, xt)
-                vt += a / M 
-            xt += vt / N 
+                a = model(tau, vtau, t, xt)
+                vtau += a / M
+            xt += vtau / N
 
     return xt
+
+
+def sample_hrf_dopri5(model, sample_shape, N, device):
+    with torch.no_grad():
+        batchsize = sample_shape[0]
+        xt = torch.randn(sample_shape, device=device)
+        t_values = torch.arange(N, device=device) / N
+        step_counter = {"steps": 0}
+        for i in range(N):
+            t = t_values[i].expand(batchsize)
+            def wrapped_model(tau, vtau):
+                step_counter["steps"] += 1 
+                return model(tau, vtau, t, xt)
+            tau_span = torch.linspace(0, 1, 2, device=device)
+            vtau = odeint(
+                wrapped_model, 
+                torch.randn_like(xt), 
+                tau_span, 
+                rtol=1e-5, 
+                atol=1e-5, 
+                method="dopri5", 
+            )
+            vtau = vtau[-1, :]
+            xt += vtau / N
+
+    return xt, step_counter['steps']
 
 
 def generate_samples(model, savedir, step, shape, device, net_="normal", hrf=True):
@@ -56,9 +123,9 @@ def generate_samples(model, savedir, step, shape, device, net_="normal", hrf=Tru
     model_ = copy.deepcopy(model)
 
     if hrf:
-        samples = sample_hrf_euler(model_, shape, 1, 100, device)
+        samples, _ = sample_hrf(model_, shape, 1, 100, device)
     else:
-        samples = sample_rf(model_, shape, 100, device)
+        samples, _ = sample_rf(model_, shape, 100, device)
     
     save_image(samples.clip(-1, 1) / 2 + 0.5, os.path.join(savedir, f"{net_}_generated_FM_images_step_{step}.png"), nrow=4)
 

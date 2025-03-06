@@ -9,8 +9,6 @@ import os
 import torch
 from absl import app, flags
 from torch.utils import tensorboard
-from torchdyn.core import NeuralODE
-from torchvision import datasets, transforms
 from tqdm import trange
 
 from dataset import get_datalooper
@@ -18,6 +16,7 @@ from model import get_model
 from utils import ema, generate_samples, load_model
 from cfm import (
     ConditionalFlowMatcher,
+    ExactOptimalTransportConditionalFlowMatcher,
 )
 
 
@@ -28,6 +27,7 @@ flags.DEFINE_string("imagenet_root", "./", help="root directory for imagenet")
 flags.DEFINE_string("exp_name", "base", help="experiment name")
 flags.DEFINE_enum("dataset", "cifar10", ["cifar10", "mnist", "imagenet32"], help="dataset name")
 flags.DEFINE_bool("hrf", False, help="train hrf or baseline")
+flags.DEFINE_integer("gpu", 0, help="GPU number")
 
 # UNet
 flags.DEFINE_integer("num_channel", 128, help="base channel of UNet")
@@ -41,8 +41,8 @@ flags.DEFINE_integer(
 )  # Lipman et al uses 400k but double batch size
 flags.DEFINE_integer("warmup", 5000, help="learning rate warmup")
 flags.DEFINE_integer("batch_size", 128, help="batch size")  # Lipman et al uses 128
+flags.DEFINE_integer("ot_bs", 128, help="optimal transport batch size")
 flags.DEFINE_integer("num_workers", 4, help="workers of Dataloader")
-flags.DEFINE_integer("gpu", 0, help="GPU number")
 flags.DEFINE_float("ema_decay", 0.9999, help="ema decay rate")
 flags.DEFINE_bool("continue_train", False, help="continue training")
 
@@ -97,7 +97,7 @@ def train(argv):
         FLAGS.batch_size, 
         FLAGS.num_workers, 
         train=True, 
-        imagenet_root=FLAGS.imagenet_root
+        imagenet_root=FLAGS.imagenet_root,
     )
 
     unet = get_model(
@@ -133,6 +133,7 @@ def train(argv):
         cur_step = ckpt['step']
 
     FM = ConditionalFlowMatcher(sigma=0.0)
+    # FM = ExactOptimalTransportConditionalFlowMatcher(sigma=0.0, ot_bs=FLAGS.ot_bs)
 
     with trange(cur_step, cur_step + FLAGS.total_steps, dynamic_ncols=True) as pbar:
         for step in pbar:
