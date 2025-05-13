@@ -90,7 +90,7 @@ class ResBlock_v(TimestepBlock):
         self.in_layers_x = nn.Sequential(
             normalization(int(channels // 4)),
             nn.SiLU(),
-            conv_nd(dims, int(channels // 4), self.out_channels, 3, padding=1),
+            conv_nd(dims, int(channels // 4), 2 * self.out_channels if use_scale_shift_norm else self.out_channels, 3, padding=1),
         )
 
         self.updown = up or down
@@ -145,7 +145,7 @@ class ResBlock_v(TimestepBlock):
     def _forward(self, x, emb):
         if isinstance(x, tuple) and isinstance(emb, tuple):
             v, hx = x
-            emb_v, emb_x = emb
+            emb_tau, emb_t = emb
         else:
             raise TypeError("wrong type for ResBlock_v inputs")
         if self.updown:
@@ -157,19 +157,20 @@ class ResBlock_v(TimestepBlock):
         else:
             h = self.in_layers(v)
         emb_hx = self.in_layers_x(hx)
-        emb_out_v = self.emb_layers_v(emb_v).type(h.dtype)
-        emb_out_x = self.emb_layers_x(emb_x).type(h.dtype)
-        while len(emb_out_v.shape) < len(h.shape):
-            emb_out_v = emb_out_v[..., None]
-            emb_out_x = emb_out_x[..., None]
+        emb_out_tau = self.emb_layers_v(emb_tau).type(h.dtype)
+        emb_out_t = self.emb_layers_x(emb_t).type(h.dtype)
+        while len(emb_out_t.shape) < len(h.shape):
+            emb_out_tau = emb_out_tau[..., None]
+            emb_out_t = emb_out_t[..., None]
         if self.use_scale_shift_norm:
-            raise NotImplementedError
             out_norm, out_rest = self.out_layers[0], self.out_layers[1:]
-            scale, shift = th.chunk(emb_out, 2, dim=1)
-            h = out_norm(h) * (1 + scale) + shift
+            scale_hx, shift_hx = th.chunk(emb_hx, 2, dim=1)
+            scale_tau, shift_tau = th.chunk(emb_out_tau, 2, dim=1)
+            scale_t, shift_t = th.chunk(emb_out_t, 2, dim=1)
+            h = out_norm(h) * (1 + scale_hx + scale_tau + scale_t) + shift_hx + shift_tau + shift_t
             h = out_rest(h)
         else:
-            h = h + emb_hx + emb_out_v + emb_out_x
+            h = h + emb_hx + emb_out_tau + emb_out_t
             h = self.out_layers(h)
         return self.skip_connection(v) + h
 
@@ -530,7 +531,7 @@ class UNetModel(nn.Module):
                     ds //= 2
                 self.output_blocks_x.append(TimestepEmbedSequential(*layers))
                 self._feature_size += ch        
-        
+        self.output_blocks_x = nn.ModuleList(self.output_blocks_x[:-1])
         
 
     def convert_to_fp16(self):
@@ -587,11 +588,14 @@ class UNetModel(nn.Module):
             hxs.append(hx)
         hv = self.middle_block(hv, emb_t_v)
         hx = self.middle_block_x(hx, emb_t)
-        for module, module_x in zip(self.output_blocks, self.output_blocks_x):
+        for idx in range(len(self.output_blocks) - 1):
             hv = th.cat([hv, hvs.pop()], dim=1)
             hx = th.cat([hx, hxs.pop()], dim=1)
-            hv = module((hv, hx), (emb_t_v, emb_t))
-            hx = module_x(hx, emb_t)
+            hv = self.output_blocks[idx]((hv, hx), (emb_t_v, emb_t))
+            hx = self.output_blocks_x[idx](hx, emb_t)
+        hv = th.cat([hv, hvs.pop()], dim=1)
+        hx = th.cat([hx, hxs.pop()], dim=1)
+        hv = self.output_blocks[-1]((hv, hx), (emb_t_v, emb_t))
         hv = hv.type(v.dtype)
         return self.out(hv)
 
